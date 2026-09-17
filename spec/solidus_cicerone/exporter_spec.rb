@@ -51,6 +51,27 @@ RSpec.describe SolidusCicerone::Exporter do
     expect(SolidusCicerone::EventStore.backend.events.keys).to contain_exactly("cart_add:3", "R123:44")
   end
 
+  it "walks ActiveRecord scopes with find_each" do
+    relation = Class.new do
+      def initialize(rows)
+        @rows = rows
+        @used_find_each = false
+      end
+
+      attr_reader :used_find_each
+
+      def find_each
+        @used_find_each = true
+        @rows.each { |row| yield row }
+      end
+    end.new([order])
+
+    described_class.call(orders: relation, users: [user], variants: [variant], reviews: [], wished_items: [])
+
+    expect(relation.used_find_each).to be(true)
+    expect(SolidusCicerone::EventStore.backend.events.keys).to eq(["R123:44"])
+  end
+
   it "drops guest orders from the export" do
     guest = SolidusCicerone::SpecFixtures::Order.new(
       id: 8,
