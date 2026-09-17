@@ -8,11 +8,12 @@ Gem::Specification.new do |spec|
   spec.authors = ["Nicholas Wieland"]
   spec.email = ["ngw@nofeed.org"]
 
-  spec.summary = "Thin Cicerone sidecar client for Solidus stores."
+  spec.summary = "Solidus host client for Cicerone."
   spec.description = <<~DESC
-    Maps Solidus IDs and hooks onto Cicerone HTTP/SQL. Does not train or rank.
-    Nightly training is SQL; storefront reads GET /recommendations; purchases
-    enqueue POST /events; impressions/clicks enqueue POST /track.
+    Interprets Solidus with ActiveRecord and speaks Cicerone's public contract.
+    Does not train or rank. Nightly training reads exported tables; storefront
+    reads GET /recommendations; events dual-write to those tables and POST
+    /events; impressions/clicks enqueue POST /track.
   DESC
   spec.homepage = "https://github.com/torbido-hq/solidus_cicerone"
   spec.license = "Beerware"
@@ -28,7 +29,7 @@ Gem::Specification.new do |spec|
     if File.directory?(".git")
       `git ls-files -z`.split("\x0")
     else
-      Dir.glob("{app,config,examples,lib}/**/*") + %w[LICENSE README.md CHANGELOG.md solidus_cicerone.gemspec]
+      Dir.glob("{app,config,db,lib}/**/*") + %w[LICENSE README.md CHANGELOG.md solidus_cicerone.gemspec]
     end
   end
 

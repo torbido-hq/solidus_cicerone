@@ -6,8 +6,10 @@ en:
       cicerone:
         title: Cicerone
         settings_saved: Cicerone settings saved
+        export_queued: Catalog export queued
         retrain_queued: Retrain queued
         dashboard: Open dashboard
+        export: Queue export
         retrain: Queue retrain
         serve_url: Serve URL
         serve_token: Serve token
@@ -19,4 +21,4 @@ en:
         default_limit: Default limit
         enabled: Enabled
         tokens_hint: Tokens are stored as Solidus preferences when available; otherwise they stay in the initializer or ENV.
-        sql_hint: Nightly training is SQL on the Cicerone job, not HTTP from Rails.
+        sql_hint: Nightly training reads the exported Solidus tables. Cicerone TOML stays on the Cicerone deploy.

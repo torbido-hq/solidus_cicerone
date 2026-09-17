@@ -20,12 +20,25 @@ RSpec.describe SolidusCicerone::Lookup do
     }
   end
 
+  it "does not enqueue impressions unless track is on" do
+    allow(client).to receive(:recommendations).and_return(body)
+
+    described_class.call(
+      user: user,
+      client: client,
+      stock_scope: ->(_ids) { [in_stock, sold_out] }
+    )
+
+    expect(SolidusCicerone::PostTrackJob.enqueued).to be_empty
+  end
+
   it "filters sold-out variants and enqueues impressions for the rest" do
     allow(client).to receive(:recommendations).with("12", hash_including(limit: 10)).and_return(body)
 
     result = described_class.call(
       user: user,
       client: client,
+      track: true,
       stock_scope: ->(_ids) { [in_stock, sold_out] }
     )
 
@@ -82,6 +95,16 @@ RSpec.describe SolidusCicerone::Lookup do
 
     expect(result.items).to eq([])
     expect(result.fallback).to be(true)
+  end
+
+  it "uses SolidusCicerone.client when no client is injected" do
+    allow(SolidusCicerone).to receive(:client).and_return(client)
+    allow(client).to receive(:recommendations).and_return(body)
+
+    described_class.call(user: user, track: false, stock_scope: ->(_) { [in_stock] })
+
+    expect(SolidusCicerone).to have_received(:client)
+    expect(client).to have_received(:recommendations)
   end
 
   it "does not call serve when disabled" do

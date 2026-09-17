@@ -14,11 +14,15 @@ module SolidusCicerone
     end
 
     def set(attrs)
-      attrs.each do |key, value|
-        next unless Configuration::KEYS.include?(key.to_sym)
+      allowed = attrs.to_h.each_with_object({}) do |(key, value), memo|
+        name = key.to_sym
+        next unless Configuration::KEYS.include?(name)
 
-        preference_set(key, value)
-        SolidusCicerone.configuration.public_send("#{key}=", value)
+        memo[name] = value
+      end
+      SolidusCicerone.configuration.assign(allowed)
+      allowed.each_key do |key|
+        preference_set(key, SolidusCicerone.configuration.public_send(key))
       end
     end
 

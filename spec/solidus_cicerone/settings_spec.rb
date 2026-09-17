@@ -10,6 +10,12 @@ RSpec.describe SolidusCicerone::Settings do
     expect(SolidusCicerone.configuration.cache_ttl).to eq(20)
   end
 
+  it "coerces enabled from admin string params" do
+    described_class.set(enabled: "false")
+
+    expect(SolidusCicerone.enabled?).to be(false)
+  end
+
   it "ignores unknown keys" do
     described_class.set(nope: "x")
 

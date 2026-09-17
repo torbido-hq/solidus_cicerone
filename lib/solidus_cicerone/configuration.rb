@@ -29,7 +29,10 @@ module SolidusCicerone
     end
 
     def enabled?
-      @enabled != false
+      value = @enabled
+      return false if value == false || value.to_s == "false" || value.to_s == "0" || value.nil?
+
+      true
     end
 
     def assign(attrs)

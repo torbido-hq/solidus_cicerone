@@ -3,6 +3,7 @@
 Spree::Core::Engine.routes.draw do
   namespace :admin do
     resource :cicerone, only: %i[show update], controller: "cicerone" do
+      post :export
       post :retrain
     end
   end

@@ -32,9 +32,9 @@ module SolidusCicerone
     end
 
     config.to_prepare do
-      next unless defined?(Spree::Bus)
-
       SolidusCicerone::OrderSubscriber.new.subscribe_to(Spree::Bus)
+      SolidusCicerone::LineItemSubscriber.install
+      SolidusCicerone::ExtensionSubscriber.install
     end
 
     def self.admin_menu_item(config)

@@ -13,8 +13,8 @@ module SolidusCicerone
         template "initializer.rb", "config/initializers/solidus_cicerone.rb"
       end
 
-      def copy_cicerone_sql_example
-        template "cicerone.solidus.toml", "config/cicerone.solidus.toml"
+      def add_migrations
+        rake "railties:install:migrations FROM=solidus_cicerone"
       end
     end
   end

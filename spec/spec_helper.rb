@@ -5,8 +5,10 @@ require "webmock/rspec"
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 $LOAD_PATH.unshift File.expand_path("../app/jobs", __dir__)
 $LOAD_PATH.unshift File.expand_path("../app/subscribers", __dir__)
+$LOAD_PATH.unshift File.expand_path("../app/helpers", __dir__)
 
 require "solidus_cicerone"
+require "spree/cicerone_helper"
 require "support/fixtures"
 require "support/active_job_stub"
 
@@ -30,8 +32,10 @@ RSpec.configure do |config|
       c.trigger_token = "trigger-token"
       c.enabled = true
     end
+    SolidusCicerone::EventStore.backend = SolidusCicerone::EventStore::Memory.new
     SolidusCicerone::PostEventsJob.enqueued.clear if defined?(SolidusCicerone::PostEventsJob)
     SolidusCicerone::PostTrackJob.enqueued.clear if defined?(SolidusCicerone::PostTrackJob)
     SolidusCicerone::RetrainJob.enqueued.clear if defined?(SolidusCicerone::RetrainJob)
+    SolidusCicerone::ExportJob.enqueued.clear if defined?(SolidusCicerone::ExportJob)
   end
 end

@@ -29,7 +29,7 @@ module SolidusCicerone
       new(...).call
     end
 
-    def initialize(user: nil, limit: nil, category: nil, exclude_unavailable: true, track: true,
+    def initialize(user: nil, limit: nil, category: nil, exclude_unavailable: true, track: false,
       client: nil, cache: nil, stock_scope: nil)
       @user = user
       @limit = limit
@@ -54,7 +54,7 @@ module SolidusCicerone
         variant: body["variant"],
         items: items
       )
-      enqueue_impressions(result) if @track
+      SolidusCicerone.enqueue_impressions(result) if @track
       result
     rescue Error
       empty_result
@@ -137,26 +137,8 @@ module SolidusCicerone
       variant.in_stock?
     end
 
-    def enqueue_impressions(result)
-      return if result.items.empty?
-      return unless defined?(SolidusCicerone::PostTrackJob)
-
-      events = result.items.map do |item|
-        EventPayload.track(
-          kind: "impression",
-          user_id: result.user_id,
-          item_id: item.item_id,
-          rank: item.rank,
-          experiment_id: result.experiment_id,
-          variant: result.variant,
-          generated_at: result.generated_at
-        )
-      end
-      SolidusCicerone::PostTrackJob.perform_later(events)
-    end
-
     def client
-      @client ||= Client.from_config
+      @client ||= SolidusCicerone.client
     end
 
     def empty_result

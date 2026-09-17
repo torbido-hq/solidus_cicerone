@@ -20,6 +20,12 @@ module Spree
         redirect_to spree.admin_cicerone_path
       end
 
+      def export
+        SolidusCicerone.enqueue_export
+        flash[:success] = I18n.t("spree.admin.cicerone.export_queued")
+        redirect_to spree.admin_cicerone_path
+      end
+
       def retrain
         SolidusCicerone.enqueue_retrain
         flash[:success] = I18n.t("spree.admin.cicerone.retrain_queued")

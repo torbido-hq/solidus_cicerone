@@ -4,4 +4,4 @@
 
 ### Added
 
-- Thin Solidus sidecar for Cicerone: SQL train example, storefront GET recs, enqueue POST /events and /track, admin tokens and retrain.
+- Solidus host for Cicerone: AR export tables, dual-write events, storefront GET recs, POST /track after render, admin tokens, export, and retrain.
