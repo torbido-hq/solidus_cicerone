@@ -70,6 +70,12 @@ RSpec.describe SolidusCicerone::EventPayload do
       occurred_at: completed_at
     )
 
-    expect(payload).to include("kind" => "click", "user_id" => "12", "item_id" => "99", "rank" => 1)
+    expect(payload).to include(
+      "kind" => "click",
+      "user_id" => "12",
+      "item_id" => "99",
+      "rank" => 1,
+      "event_id" => "click:12:99:2026-09-17T12:00:00Z:1"
+    )
   end
 end

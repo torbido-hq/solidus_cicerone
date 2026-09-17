@@ -42,18 +42,33 @@ module SolidusCicerone
       payload
     end
 
-    def track(kind:, user_id:, item_id:, occurred_at: nil, rank: nil, experiment_id: nil, variant: nil, generated_at: nil)
+    def track(kind:, user_id:, item_id:, occurred_at: nil, rank: nil, experiment_id: nil, variant: nil, generated_at: nil, event_id: nil)
+      occurred = iso8601(occurred_at)
       payload = {
         "kind" => kind.to_s,
         "user_id" => user_id.to_s,
         "item_id" => item_id.to_s,
-        "occurred_at" => iso8601(occurred_at)
+        "occurred_at" => occurred
       }
       payload["rank"] = Integer(rank) unless rank.nil? || rank.to_s.empty?
       payload["experiment_id"] = experiment_id unless experiment_id.nil? || experiment_id.to_s.empty?
       payload["variant"] = variant unless variant.nil? || variant.to_s.empty?
       payload["generated_at"] = generated_at unless generated_at.nil? || generated_at.to_s.empty?
+      payload["event_id"] = track_event_id(
+        event_id: event_id,
+        kind: payload["kind"],
+        user_id: payload["user_id"],
+        item_id: payload["item_id"],
+        generated_at: payload["generated_at"] || occurred,
+        rank: payload["rank"]
+      )
       payload
+    end
+
+    def track_event_id(event_id:, kind:, user_id:, item_id:, generated_at:, rank:)
+      return event_id.to_s unless event_id.nil? || event_id.to_s.empty?
+
+      [kind, user_id, item_id, generated_at, rank].compact.join(":")
     end
 
     def iso8601(time)
