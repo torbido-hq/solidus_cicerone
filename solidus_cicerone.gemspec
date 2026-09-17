@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
     Nightly training is SQL; storefront reads GET /recommendations; purchases
     enqueue POST /events; impressions/clicks enqueue POST /track.
   DESC
-  spec.homepage = "https://github.com/solidusio-contrib/solidus_cicerone"
+  spec.homepage = "https://github.com/torbido-hq/solidus_cicerone"
   spec.license = "Beerware"
 
   spec.metadata["homepage_uri"] = spec.homepage
