@@ -4,7 +4,7 @@ Thin Rails sidecar for [Cicerone](https://github.com/torbido-hq/cicerone). Cicer
 
 [Beerware](LICENSE) — same notice as Cicerone.
 
-Intended home: [solidusio-contrib/solidus_cicerone](https://github.com/solidusio-contrib/solidus_cicerone).
+Home: [torbido-hq/solidus_cicerone](https://github.com/torbido-hq/solidus_cicerone). Later transfer to `solidusio-contrib` via Solidus Slack.
 
 IDs: `user_id` = Solidus user id (text). `item_id` = variant id (text). Guests with nil `user_id` are dropped.
 
@@ -18,10 +18,10 @@ IDs: `user_id` = Solidus user id (text). `item_id` = variant id (text). Guests w
 
 ## Install
 
-Add to the store Gemfile (path or git until the contrib repo exists):
+Add to the store Gemfile:
 
 ```ruby
-gem "solidus_cicerone", github: "solidusio-contrib/solidus_cicerone"
+gem "solidus_cicerone", github: "torbido-hq/solidus_cicerone"
 ```
 
 ```sh
