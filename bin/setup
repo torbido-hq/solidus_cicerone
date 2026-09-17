@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+bundle check || bundle install
+BUNDLE_GEMFILE=Gemfile.unit bundle check || BUNDLE_GEMFILE=Gemfile.unit bundle install

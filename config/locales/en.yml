@@ -1,0 +1,22 @@
+en:
+  spree:
+    admin:
+      tab:
+        cicerone: Cicerone
+      cicerone:
+        title: Cicerone
+        settings_saved: Cicerone settings saved
+        retrain_queued: Retrain queued
+        dashboard: Open dashboard
+        retrain: Queue retrain
+        serve_url: Serve URL
+        serve_token: Serve token
+        events_token: Events token
+        trigger_url: Trigger URL
+        trigger_token: Trigger token
+        dashboard_url: Dashboard URL
+        cache_ttl: Cache TTL (seconds)
+        default_limit: Default limit
+        enabled: Enabled
+        tokens_hint: Tokens are stored as Solidus preferences when available; otherwise they stay in the initializer or ENV.
+        sql_hint: Nightly training is SQL on the Cicerone job, not HTTP from Rails.

@@ -1,0 +1,80 @@
+# Cicerone job/serve config for a Solidus Postgres shop.
+# Mount next to the Cicerone containers. Rails never trains or ranks.
+#
+# IDs: user_id = Solidus user id (text). item_id = variant id (text).
+# Guests (order.user_id IS NULL) are dropped from training.
+
+[job]
+mode = "batch"
+top_k = 10
+cron_schedule = "0 3 * * *"
+# [job.trigger]
+# enabled = true
+# auth_token = "${TRIGGER_AUTH_TOKEN}"
+# host = "0.0.0.0"
+# port = 8080
+
+[input]
+kind = "db"
+
+[input.options]
+database_url = "${SOLIDUS_DATABASE_URL}"
+events_query = """
+SELECT o.user_id::text AS user_id,
+       li.variant_id::text AS item_id,
+       'purchase' AS event_type,
+       li.quantity,
+       o.completed_at AS occurred_at
+FROM spree_line_items li
+JOIN spree_orders o ON o.id = li.order_id
+WHERE o.completed_at IS NOT NULL
+  AND o.state = 'complete'
+  AND o.user_id IS NOT NULL
+  AND o.canceled_at IS NULL
+"""
+users_query = """
+SELECT id::text AS user_id
+FROM spree_users
+"""
+items_query = """
+SELECT v.id::text AS item_id,
+       COALESCE(t.name, p.slug, 'uncategorized') AS category,
+       (
+         (p.available_on IS NULL OR p.available_on <= NOW())
+         AND (p.discontinue_on IS NULL OR p.discontinue_on > NOW())
+       ) AS published,
+       EXISTS (
+         SELECT 1
+         FROM spree_stock_items si
+         WHERE si.variant_id = v.id
+           AND si.deleted_at IS NULL
+           AND (si.count_on_hand > 0 OR si.backorderable = TRUE)
+       ) AS in_stock
+FROM spree_variants v
+JOIN spree_products p ON p.id = v.product_id
+LEFT JOIN spree_products_taxons pt ON pt.product_id = p.id
+LEFT JOIN spree_taxons t ON t.id = pt.taxon_id
+WHERE v.deleted_at IS NULL
+  AND p.deleted_at IS NULL
+"""
+
+[output]
+kind = "db"
+
+[output.options]
+database_url = "${CICERONE_DATABASE_URL}"
+
+[serve]
+auth_token = "${SERVE_AUTH_TOKEN}"
+host = "0.0.0.0"
+port = 8000
+# log_impressions = false
+
+[events]
+enabled = true
+kind = "webhook"
+
+[track]
+enabled = true
+attribution_window_hours = 24
+conversion_event_types = ["purchase"]

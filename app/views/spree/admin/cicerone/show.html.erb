@@ -1,0 +1,62 @@
+<% content_for :page_title do %>
+  <%= t("spree.admin.cicerone.title") %>
+<% end %>
+
+<% if @settings[:dashboard_url].present? %>
+  <p>
+    <%= link_to t("spree.admin.cicerone.dashboard"), @settings[:dashboard_url], target: "_blank", rel: "noopener" %>
+  </p>
+<% end %>
+
+<p><%= t("spree.admin.cicerone.sql_hint") %></p>
+<p><%= t("spree.admin.cicerone.tokens_hint") %></p>
+
+<%= form_with url: spree.admin_cicerone_path, method: :put, local: true do %>
+  <fieldset>
+    <div class="field">
+      <%= label_tag "cicerone_serve_url", t("spree.admin.cicerone.serve_url") %>
+      <%= text_field_tag "cicerone[serve_url]", @settings[:serve_url], id: "cicerone_serve_url" %>
+    </div>
+    <div class="field">
+      <%= label_tag "cicerone_serve_token", t("spree.admin.cicerone.serve_token") %>
+      <%= password_field_tag "cicerone[serve_token]", @settings[:serve_token], id: "cicerone_serve_token", autocomplete: "off" %>
+    </div>
+    <div class="field">
+      <%= label_tag "cicerone_events_token", t("spree.admin.cicerone.events_token") %>
+      <%= password_field_tag "cicerone[events_token]", @settings[:events_token], id: "cicerone_events_token", autocomplete: "off" %>
+    </div>
+    <div class="field">
+      <%= label_tag "cicerone_trigger_url", t("spree.admin.cicerone.trigger_url") %>
+      <%= text_field_tag "cicerone[trigger_url]", @settings[:trigger_url], id: "cicerone_trigger_url" %>
+    </div>
+    <div class="field">
+      <%= label_tag "cicerone_trigger_token", t("spree.admin.cicerone.trigger_token") %>
+      <%= password_field_tag "cicerone[trigger_token]", @settings[:trigger_token], id: "cicerone_trigger_token", autocomplete: "off" %>
+    </div>
+    <div class="field">
+      <%= label_tag "cicerone_dashboard_url", t("spree.admin.cicerone.dashboard_url") %>
+      <%= text_field_tag "cicerone[dashboard_url]", @settings[:dashboard_url], id: "cicerone_dashboard_url" %>
+    </div>
+    <div class="field">
+      <%= label_tag "cicerone_cache_ttl", t("spree.admin.cicerone.cache_ttl") %>
+      <%= number_field_tag "cicerone[cache_ttl]", @settings[:cache_ttl], id: "cicerone_cache_ttl" %>
+    </div>
+    <div class="field">
+      <%= label_tag "cicerone_default_limit", t("spree.admin.cicerone.default_limit") %>
+      <%= number_field_tag "cicerone[default_limit]", @settings[:default_limit], id: "cicerone_default_limit" %>
+    </div>
+    <div class="field">
+      <%= hidden_field_tag "cicerone[enabled]", "false" %>
+      <%= label_tag "cicerone_enabled" do %>
+        <%= check_box_tag "cicerone[enabled]", "true", @settings[:enabled], id: "cicerone_enabled" %>
+        <%= t("spree.admin.cicerone.enabled") %>
+      <% end %>
+    </div>
+  </fieldset>
+
+  <div class="form-buttons">
+    <%= submit_tag t("spree.actions.update") %>
+  </div>
+<% end %>
+
+<%= button_to t("spree.admin.cicerone.retrain"), spree.retrain_admin_cicerone_path, method: :post %>
