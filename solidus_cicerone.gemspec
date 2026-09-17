@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
     enqueue POST /events; impressions/clicks enqueue POST /track.
   DESC
   spec.homepage = "https://github.com/solidusio-contrib/solidus_cicerone"
-  spec.license = "BSD-3-Clause"
+  spec.license = "Beerware"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage

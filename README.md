@@ -2,6 +2,8 @@
 
 Thin Rails sidecar for [Cicerone](https://github.com/torbido-hq/cicerone). Cicerone stays a Docker job + serve process. This gem maps Solidus IDs onto Cicerone HTTP/SQL. It does not train or rank.
 
+[Beerware](LICENSE) — same notice as Cicerone.
+
 Intended home: [solidusio-contrib/solidus_cicerone](https://github.com/solidusio-contrib/solidus_cicerone).
 
 IDs: `user_id` = Solidus user id (text). `item_id` = variant id (text). Guests with nil `user_id` are dropped.
@@ -51,3 +53,7 @@ Optional `cart_add` / `view` / reviews / wishlist events: build with `SolidusCic
 - Use guest session ids as durable `user_id`
 - Expect today’s new SKU in personalized lists
 - Replace inventory, promotions, or merchandiser-curated related products
+
+## License
+
+[Beerware](LICENSE) (Revision 42), same text as Cicerone.
