@@ -80,8 +80,21 @@ module SolidusCicerone
       sql.to_s.strip.sub(/\s*;\s*\z/, "")
     end
 
+    TOML_BASIC_ESCAPES = {
+      "\\" => "\\\\",
+      "\"" => "\\\"",
+      "\b" => "\\b",
+      "\t" => "\\t",
+      "\n" => "\\n",
+      "\f" => "\\f",
+      "\r" => "\\r"
+    }.freeze
+
     def toml_basic_string(value)
-      +'"' << value.to_s.gsub(/[\\"]/) { |char| "\\#{char}" } << '"'
+      escaped = value.to_s.each_char.map do |char|
+        TOML_BASIC_ESCAPES[char] || (char.ord < 0x20 || char.ord == 0x7f ? format("\\u%04X", char.ord) : char)
+      end.join
+      +'"' << escaped << '"'
     end
   end
 end

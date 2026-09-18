@@ -69,6 +69,10 @@ RSpec.describe SolidusCicerone::Input do
       "items_query = \"SELECT item_id, category, published, in_stock FROM solidus_cicerone_items\""
     )
     expect(described_class.queries.keys).to eq(%i[events_query users_query items_query])
-    expect(described_class.toml_basic_string('a\\b"c')).to eq('"a\\\\b\\"c"')
+    expect(described_class.toml_basic_string("a\\b\"c\n\t")).to eq('"a\\\\b\\"c\\n\\t"')
+    expect(described_class.toml_fragment(events: "SELECT 1\nFROM dual")).to include(
+      'events_query = "SELECT 1\\nFROM dual"'
+    )
+    expect(described_class.toml_basic_string("\u0001")).to eq('"\\u0001"')
   end
 end
