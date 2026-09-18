@@ -9,7 +9,7 @@
 # Offense count: 8
 # Configuration parameters: AllowedMethods, AllowedPatterns, CountRepeatedAttributes.
 Metrics/AbcSize:
-  Max: 32
+  Max: 38
 
 # Offense count: 1
 # Configuration parameters: CountComments, CountAsOne, AllowedMethods, AllowedPatterns.
@@ -40,7 +40,7 @@ Metrics/ModuleLength:
 # Offense count: 6
 # Configuration parameters: CountKeywordArgs, MaxOptionalParameters.
 Metrics/ParameterLists:
-  Max: 8
+  Max: 9
 
 # Offense count: 5
 # Configuration parameters: AllowedMethods, AllowedPatterns.

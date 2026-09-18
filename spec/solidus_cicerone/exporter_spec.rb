@@ -60,9 +60,9 @@ RSpec.describe SolidusCicerone::Exporter do
 
       attr_reader :used_find_each
 
-      def find_each
+      def find_each(&block)
         @used_find_each = true
-        @rows.each { |row| yield row }
+        @rows.each(&block)
       end
     end.new([order])
 

@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, master]
 
 # Pinned GitHub Action SHAs, centralized here so a version bump only needs to
 # change one line instead of every call site. Referenced below via YAML
@@ -30,7 +30,7 @@ jobs:
       - name: Set up Ruby
         uses: *setup_ruby_action
         with:
-          ruby-version: "3.2"
+          ruby-version: "3.3"
           bundler-cache: true
 
       - name: Scan for known security vulnerabilities in gems used
@@ -47,7 +47,7 @@ jobs:
       - name: Set up Ruby
         uses: *setup_ruby_action
         with:
-          ruby-version: "3.2"
+          ruby-version: "3.3"
           bundler-cache: true
 
       - name: Prepare RuboCop cache
@@ -72,7 +72,7 @@ jobs:
       - name: Set up Ruby
         uses: *setup_ruby_action
         with:
-          ruby-version: "3.2"
+          ruby-version: "3.3"
           bundler-cache: true
 
       - name: Run specs
