@@ -14,14 +14,16 @@ module Spree
       SolidusCicerone.record_view(user, variant)
     end
 
-    def cicerone_track_path(item_id:, rank: nil, kind: "click", experiment_id: nil, variant: nil, generated_at: nil)
+    def cicerone_track_path(item_id:, rank: nil, kind: "click", experiment_id: nil, variant: nil, generated_at: nil,
+                            event_id: nil)
       spree.cicerone_track_path(
         item_id: item_id,
         rank: rank,
         kind: kind,
         experiment_id: experiment_id,
         variant: variant,
-        generated_at: generated_at
+        generated_at: generated_at,
+        event_id: event_id
       )
     end
   end

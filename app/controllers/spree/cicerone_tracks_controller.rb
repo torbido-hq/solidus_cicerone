@@ -17,6 +17,7 @@ module Spree
       kinds = Array(params[:kind] || params[:kinds] || "click")
       item_ids = Array(params[:item_id] || params[:item_ids])
       ranks = Array(params[:rank] || params[:ranks])
+      event_ids = Array(params[:event_id] || params[:event_ids])
 
       item_ids.each_with_index.map do |item_id, index|
         next if item_id.to_s.empty?
@@ -28,7 +29,8 @@ module Spree
           rank: ranks[index],
           experiment_id: params[:experiment_id],
           variant: params[:variant],
-          generated_at: params[:generated_at]
+          generated_at: params[:generated_at],
+          event_id: event_ids[index]
         )
       end
     end

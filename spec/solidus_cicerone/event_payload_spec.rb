@@ -75,7 +75,42 @@ RSpec.describe SolidusCicerone::EventPayload do
       "user_id" => "12",
       "item_id" => "99",
       "rank" => 1,
-      "event_id" => "click:12:99:2026-09-17T12:00:00Z:1"
+      "event_id" => "click:12:99:1"
     )
+  end
+
+  it "keeps an explicit track event_id" do
+    payload = described_class.track(
+      kind: :click, user_id: "12", item_id: "99", rank: 1, event_id: "click-1"
+    )
+
+    expect(payload["event_id"]).to eq("click-1")
+  end
+
+  it "uses generated_at in the default event_id, not occurred_at" do
+    payload = described_class.track(
+      kind: :click,
+      user_id: "12",
+      item_id: "99",
+      rank: 1,
+      occurred_at: completed_at,
+      generated_at: "2026-09-17T03:00:00Z"
+    )
+
+    expect(payload["event_id"]).to eq("click:12:99:2026-09-17T03:00:00Z:1")
+  end
+
+  it "stays stable across retries when generated_at is omitted" do
+    allow(described_class).to receive(:now_utc).and_return(
+      Time.utc(2026, 1, 1, 0, 0, 0),
+      Time.utc(2026, 1, 2, 0, 0, 0)
+    )
+
+    first = described_class.track(kind: :click, user_id: "12", item_id: "99", rank: 1)
+    second = described_class.track(kind: :click, user_id: "12", item_id: "99", rank: 1)
+
+    expect(first["event_id"]).to eq("click:12:99:1")
+    expect(second["event_id"]).to eq(first["event_id"])
+    expect(first["occurred_at"]).not_to eq(second["occurred_at"])
   end
 end

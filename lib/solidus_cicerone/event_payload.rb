@@ -59,7 +59,7 @@ module SolidusCicerone
         kind: payload["kind"],
         user_id: payload["user_id"],
         item_id: payload["item_id"],
-        generated_at: payload["generated_at"] || occurred,
+        generated_at: payload["generated_at"],
         rank: payload["rank"]
       )
       payload
