@@ -74,9 +74,9 @@ RSpec.describe SolidusCicerone::EventPayload do
       "kind" => "click",
       "user_id" => "12",
       "item_id" => "99",
-      "rank" => 1,
-      "event_id" => '["click","12","99",null,1]'
+      "rank" => 1
     )
+    expect(payload).not_to have_key("event_id")
   end
 
   it "keeps an explicit track event_id" do
@@ -100,7 +100,7 @@ RSpec.describe SolidusCicerone::EventPayload do
     expect(payload["event_id"]).to eq('["click","12","99","2026-09-17T03:00:00Z",1]')
   end
 
-  it "stays stable across retries when generated_at is omitted" do
+  it "omits a default event_id when generated_at is missing" do
     allow(described_class).to receive(:now_utc).and_return(
       Time.utc(2026, 1, 1, 0, 0, 0),
       Time.utc(2026, 1, 2, 0, 0, 0)
@@ -109,14 +109,29 @@ RSpec.describe SolidusCicerone::EventPayload do
     first = described_class.track(kind: :click, user_id: "12", item_id: "99", rank: 1)
     second = described_class.track(kind: :click, user_id: "12", item_id: "99", rank: 1)
 
-    expect(first["event_id"]).to eq('["click","12","99",null,1]')
-    expect(second["event_id"]).to eq(first["event_id"])
+    expect(first).not_to have_key("event_id")
+    expect(second).not_to have_key("event_id")
     expect(first["occurred_at"]).not_to eq(second["occurred_at"])
   end
 
+  it "stays stable across retries that share generated_at" do
+    first = described_class.track(
+      kind: :click, user_id: "12", item_id: "99", rank: 1, generated_at: "2026-09-17T03:00:00Z"
+    )
+    second = described_class.track(
+      kind: :click, user_id: "12", item_id: "99", rank: 1, generated_at: "2026-09-17T03:00:00Z"
+    )
+
+    expect(first["event_id"]).to eq(second["event_id"])
+  end
+
   it "does not collide when a field contains a colon" do
-    shifted = described_class.track(kind: "a:b", user_id: "c", item_id: "1")
-    other = described_class.track(kind: "a", user_id: "b:c", item_id: "1")
+    shifted = described_class.track(
+      kind: "a:b", user_id: "c", item_id: "1", generated_at: "2026-09-17T03:00:00Z"
+    )
+    other = described_class.track(
+      kind: "a", user_id: "b:c", item_id: "1", generated_at: "2026-09-17T03:00:00Z"
+    )
 
     expect(shifted["event_id"]).not_to eq(other["event_id"])
   end

@@ -56,7 +56,7 @@ module SolidusCicerone
       payload["experiment_id"] = experiment_id unless experiment_id.nil? || experiment_id.to_s.empty?
       payload["variant"] = variant unless variant.nil? || variant.to_s.empty?
       payload["generated_at"] = generated_at unless generated_at.nil? || generated_at.to_s.empty?
-      payload["event_id"] = track_event_id(
+      id = track_event_id(
         event_id: event_id,
         kind: payload["kind"],
         user_id: payload["user_id"],
@@ -64,11 +64,13 @@ module SolidusCicerone
         generated_at: payload["generated_at"],
         rank: payload["rank"]
       )
+      payload["event_id"] = id unless id.nil? || id.to_s.empty?
       payload
     end
 
     def track_event_id(event_id:, kind:, user_id:, item_id:, generated_at:, rank:)
       return event_id.to_s unless event_id.nil? || event_id.to_s.empty?
+      return if generated_at.nil? || generated_at.to_s.empty?
 
       JSON.generate([kind, user_id, item_id, generated_at, rank])
     end
