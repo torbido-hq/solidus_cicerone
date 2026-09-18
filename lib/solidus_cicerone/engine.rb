@@ -32,6 +32,7 @@ module SolidusCicerone
     end
 
     config.to_prepare do
+      SolidusCicerone::EventStore.ensure_active_record!
       SolidusCicerone::OrderSubscriber.new.subscribe_to(Spree::Bus)
       SolidusCicerone::LineItemSubscriber.install
       SolidusCicerone::ExtensionSubscriber.install

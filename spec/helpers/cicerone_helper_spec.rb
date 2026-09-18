@@ -45,14 +45,16 @@ RSpec.describe Spree::CiceroneHelper do
         rank: 1,
         experiment_id: "exp-1",
         variant: "control",
-        generated_at: "2026-09-17T03:00:00Z"
+        generated_at: "2026-09-17T03:00:00Z",
+        event_id: "click-9"
       )
     ).to include(
       item_id: "9",
       rank: 1,
       experiment_id: "exp-1",
       variant: "control",
-      generated_at: "2026-09-17T03:00:00Z"
+      generated_at: "2026-09-17T03:00:00Z",
+      event_id: "click-9"
     )
   end
 

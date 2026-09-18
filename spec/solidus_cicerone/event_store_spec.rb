@@ -3,6 +3,19 @@
 require "spec_helper"
 
 RSpec.describe SolidusCicerone::EventStore do
+  it "defaults to Null when ActiveRecord export tables are not loaded" do
+    described_class.reset!
+
+    expect(described_class.backend).to be_a(described_class::Null)
+    expect(described_class.active_record_available?).to be(false)
+  end
+
+  it "does not replace a Memory backend when ensuring ActiveRecord" do
+    described_class.ensure_active_record!
+
+    expect(described_class.backend).to be_a(described_class::Memory)
+  end
+
   it "upserts by event_id" do
     described_class.upsert_event(
       "user_id" => "1",

@@ -33,18 +33,26 @@ module SolidusCicerone
     private
 
     def user_rows
-      Array(users).filter_map { |user| Catalog.user_row(user) if Ids.user_id_for(user) }
+      rows = []
+      each_record(users) do |user|
+        next unless Ids.user_id_for(user)
+
+        rows << Catalog.user_row(user)
+      end
+      rows
     end
 
     def item_rows
       seen = {}
-      Array(variants).each_with_object([]) do |variant, rows|
+      rows = []
+      each_record(variants) do |variant|
         row = Catalog.item_row(variant)
         next if row["item_id"].nil? || seen[row["item_id"]]
 
         seen[row["item_id"]] = true
         rows << row
       end
+      rows
     end
 
     def event_rows
@@ -52,15 +60,35 @@ module SolidusCicerone
     end
 
     def purchases
-      Array(orders).flat_map { |order| EventPayload.purchases_from_order(order) }
+      rows = []
+      each_record(orders) { |order| rows.concat(EventPayload.purchases_from_order(order)) }
+      rows
     end
 
     def review_events
-      Array(reviews).filter_map { |review| Catalog.review_event(review) }
+      rows = []
+      each_record(reviews) do |review|
+        event = Catalog.review_event(review)
+        rows << event if event
+      end
+      rows
     end
 
     def wishlist_events
-      Array(wished_items).filter_map { |item| Catalog.wishlist_event(item) }
+      rows = []
+      each_record(wished_items) do |item|
+        event = Catalog.wishlist_event(item)
+        rows << event if event
+      end
+      rows
+    end
+
+    def each_record(scope)
+      if scope.respond_to?(:find_each)
+        scope.find_each { |record| yield record }
+      else
+        Array(scope).each { |record| yield record }
+      end
     end
 
     def orders

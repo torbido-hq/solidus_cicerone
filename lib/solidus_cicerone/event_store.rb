@@ -11,7 +11,7 @@ module SolidusCicerone
     module_function
 
     def backend
-      @backend ||= Null.new
+      @backend ||= default_backend
     end
 
     def backend=(value)
@@ -20,6 +20,28 @@ module SolidusCicerone
 
     def reset!
       @backend = nil
+    end
+
+    def default_backend
+      active_record_available? ? ActiveRecordBackend.new : Null.new
+    end
+
+    def active_record_available?
+      return false unless defined?(ActiveRecord::Base)
+      return false unless defined?(::SolidusCicerone::Event)
+      return false unless ::SolidusCicerone::Event.respond_to?(:table_exists?)
+
+      ::SolidusCicerone::Event.table_exists?
+    rescue StandardError
+      false
+    end
+
+    def ensure_active_record!
+      return unless active_record_available?
+      return if @backend.is_a?(Memory)
+      return if @backend.is_a?(ActiveRecordBackend)
+
+      @backend = ActiveRecordBackend.new
     end
 
     def upsert_event(row)
