@@ -75,7 +75,7 @@ RSpec.describe SolidusCicerone::EventPayload do
       "user_id" => "12",
       "item_id" => "99",
       "rank" => 1,
-      "event_id" => "click:12:99:1"
+      "event_id" => '["click","12","99",null,1]'
     )
   end
 
@@ -97,7 +97,7 @@ RSpec.describe SolidusCicerone::EventPayload do
       generated_at: "2026-09-17T03:00:00Z"
     )
 
-    expect(payload["event_id"]).to eq("click:12:99:2026-09-17T03:00:00Z:1")
+    expect(payload["event_id"]).to eq('["click","12","99","2026-09-17T03:00:00Z",1]')
   end
 
   it "stays stable across retries when generated_at is omitted" do
@@ -109,8 +109,15 @@ RSpec.describe SolidusCicerone::EventPayload do
     first = described_class.track(kind: :click, user_id: "12", item_id: "99", rank: 1)
     second = described_class.track(kind: :click, user_id: "12", item_id: "99", rank: 1)
 
-    expect(first["event_id"]).to eq("click:12:99:1")
+    expect(first["event_id"]).to eq('["click","12","99",null,1]')
     expect(second["event_id"]).to eq(first["event_id"])
     expect(first["occurred_at"]).not_to eq(second["occurred_at"])
+  end
+
+  it "does not collide when a field contains a colon" do
+    shifted = described_class.track(kind: "a:b", user_id: "c", item_id: "1")
+    other = described_class.track(kind: "a", user_id: "b:c", item_id: "1")
+
+    expect(shifted["event_id"]).not_to eq(other["event_id"])
   end
 end

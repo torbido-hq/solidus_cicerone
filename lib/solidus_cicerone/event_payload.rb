@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "json"
+
 require "solidus_cicerone/ids"
 
 module SolidusCicerone
@@ -68,7 +70,7 @@ module SolidusCicerone
     def track_event_id(event_id:, kind:, user_id:, item_id:, generated_at:, rank:)
       return event_id.to_s unless event_id.nil? || event_id.to_s.empty?
 
-      [kind, user_id, item_id, generated_at, rank].compact.join(":")
+      JSON.generate([kind, user_id, item_id, generated_at, rank])
     end
 
     def iso8601(time)
