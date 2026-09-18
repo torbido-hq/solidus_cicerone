@@ -10,7 +10,7 @@ IDs: `user_id` = Solidus user id (text). `item_id` = variant id (text). Guests w
 
 ## Call pattern
 
-1. **Nightly train = exported tables.** `ExportJob` writes `solidus_cicerone_events` / `_users` / `_items`. Point Cicerone `[input] kind=db` at those tables (see below). Cicerone config stays on the Cicerone deploy.
+1. **Nightly train = exported tables.** `ExportJob` writes `solidus_cicerone_events` / `_users` / `_items`. Author Cicerone’s three `[input] kind=db` SELECTs from those tables with ActiveRecord (see below). Cicerone config stays on the Cicerone deploy.
 2. **Storefront read = `GET /recommendations/{user_id}`** (Bearer). Short cache. Filter live `variant.in_stock?` in Rails. Guests use `__cold_start__`.
 3. **Same-day events = upsert export + `POST /events`.** Purchases (`:order_finalized`) and cart adds (`Spree::LineItem` create) go through `SolidusCicerone.record_event`. Checkout does not wait.
 4. **CTR = `POST /track` after render.** Call `cicerone_record_impressions(recs)` once the widget is on the page. Clicks use `cicerone_track_path` with the recs experiment fields. Never training.
@@ -105,7 +105,7 @@ Admin does not clone Cicerone Quality or Experiments. It does not edit Cicerone 
 
 On the Cicerone deploy, not in Rails:
 
-1. Point `[input] kind=db` at the **Solidus** database (read-only role, three tables). See [Cicerone input](#cicerone-input).
+1. Point `[input] kind=db` at the **Solidus** database (read-only role). Paste the three SELECTs this gem authors — see [Cicerone input](#cicerone-input).
 2. Match tokens:
    - serve `auth_token` = `CICERONE_SERVE_TOKEN`
    - events `auth_token` = `CICERONE_EVENTS_TOKEN` (or the serve token)
@@ -117,25 +117,46 @@ On the Cicerone deploy, not in Rails:
 
 1. Migrate, set ENV, start a worker.
 2. Queue export, wait until `solidus_cicerone_items` has rows.
-3. Queue retrain.
-4. Render recs on the storefront (below).
+3. Print `bin/rails solidus_cicerone:input` and paste `[input]` on the Cicerone deploy.
+4. Queue retrain.
+5. Render recs on the storefront (below).
 
 ## Cicerone input
 
-On the Cicerone host, point `[input]` at the Solidus database. Do not copy a full TOML from this gem.
+Cicerone `[input]` kinds are `dataset` and `db`. It does not load ERb, ActiveRecord, or Rails. Author the three SELECTs in this Solidus app (AR `to_sql`, or ERb that prints SQL), then paste them into Cicerone TOML on the Cicerone deploy. Do not copy a full TOML from this gem.
 
-```toml
-[input]
-kind = "db"
+The default contract is the export tables `ExportJob` writes. `SolidusCicerone::Input` compiles that SQL. After migrate, the export models also expose `cicerone_input` scopes, so adapter quoting comes from AR:
 
-[input.options]
-database_url = "${SOLIDUS_DATABASE_URL}"
-events_query = "SELECT user_id, item_id, event_type, quantity, occurred_at FROM solidus_cicerone_events"
-users_query = "SELECT user_id, country FROM solidus_cicerone_users"
-items_query = "SELECT item_id, category, published, in_stock FROM solidus_cicerone_items"
+```ruby
+SolidusCicerone::Input.events
+# SELECT user_id, item_id, event_type, quantity, occurred_at FROM solidus_cicerone_events
+
+SolidusCicerone::Event.cicerone_input.to_sql
+SolidusCicerone::Input.events(SolidusCicerone::Event.cicerone_input)
 ```
 
-Give that role read-only access to those three tables. Extra columns such as `country` are there if you map them; this gem does not write `features.toml`.
+Print a paste-ready `[input]` fragment (also shown at `/admin/cicerone`):
+
+```sh
+bin/rails solidus_cicerone:input
+```
+
+Or from ERb / `rails runner`:
+
+```erb
+<%= SolidusCicerone::Input.toml_fragment %>
+```
+
+Pass your own relation or SQL string when the default full-table SELECT is not what you want. The relation must project the contract columns (`user_id`, `item_id`, `event_type`, `quantity`, `occurred_at` / `user_id`, `country` / `item_id`, `category`, `published`, `in_stock`). `Input` compiles AR relations with `unprepared_statement` so `?` binds are inlined; Cicerone runs the finished `SELECT` as-is.
+
+```ruby
+scope = SolidusCicerone::Event.cicerone_input.where("occurred_at >= ?", 2.years.ago)
+puts SolidusCicerone::Input.toml_fragment(events: scope)
+```
+
+Category, `published`, and `in_stock` are computed in Ruby during export (`Catalog`). Pointing Cicerone at live `spree_*` tables skips that denormalization; only do that if your own AR relation already projects the same contract.
+
+Give the Cicerone role read-only access to those three tables. Extra columns such as `country` are there if you map them; this gem does not write `features.toml`.
 
 ## Storefront
 
