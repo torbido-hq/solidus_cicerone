@@ -8,7 +8,7 @@ module SolidusCicerone
     Address = Struct.new(:country, :country_iso, keyword_init: true)
     Product = Struct.new(:slug, :taxons, :available, :available_on, :discontinue_on, :master, keyword_init: true) do
       def available?
-        available.nil? ? true : available
+        available.nil? || available
       end
     end
     Variant = Struct.new(:id, :stock, :product, keyword_init: true) do

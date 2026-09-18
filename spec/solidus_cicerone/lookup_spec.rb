@@ -14,8 +14,8 @@ RSpec.describe SolidusCicerone::Lookup do
       "fallback" => false,
       "generated_at" => "2026-09-17T03:00:00Z",
       "items" => [
-        {"item_id" => "9", "rank" => 1, "score" => 0.9, "source" => "personalized"},
-        {"item_id" => "8", "rank" => 2, "score" => 0.8, "source" => "personalized"}
+        { "item_id" => "9", "rank" => 1, "score" => 0.9, "source" => "personalized" },
+        { "item_id" => "8", "rank" => 2, "score" => 0.8, "source" => "personalized" }
       ]
     }
   end
@@ -68,7 +68,7 @@ RSpec.describe SolidusCicerone::Lookup do
         @hash = {}
       end
 
-      def fetch(key, expires_in:)
+      def fetch(key, **)
         @hash[key] ||= yield
       end
     end.new
@@ -105,6 +105,19 @@ RSpec.describe SolidusCicerone::Lookup do
 
     expect(SolidusCicerone).to have_received(:client)
     expect(client).to have_received(:recommendations)
+  end
+
+  it "uses Spree::Variant when no stock_scope is injected" do
+    relation = Object.new
+    def relation.where(*)
+      []
+    end
+    stub_const("Spree::Variant", relation)
+    allow(client).to receive(:recommendations).and_return(body)
+
+    result = described_class.call(user: user, client: client, track: false)
+
+    expect(result.items).to eq([])
   end
 
   it "does not call serve when disabled" do

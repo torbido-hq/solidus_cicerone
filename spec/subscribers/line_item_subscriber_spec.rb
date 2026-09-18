@@ -33,4 +33,39 @@ RSpec.describe SolidusCicerone::LineItemSubscriber do
     expect(SolidusCicerone::EventStore.backend.events).to eq({})
     expect(SolidusCicerone::PostEventsJob.enqueued).to eq([])
   end
+
+  it "installs the after_create_commit hook on LineItem" do
+    klass = Class.new do
+      class << self
+        attr_reader :hook
+      end
+
+      def self.after_create_commit(method_name)
+        @hook = method_name
+      end
+
+      def id
+        3
+      end
+
+      def variant
+        SolidusCicerone::SpecFixtures::Variant.new(id: 8)
+      end
+
+      def order
+        SolidusCicerone::SpecFixtures::Order.new(user_id: 5)
+      end
+
+      def quantity
+        1
+      end
+    end
+    stub_const("Spree::LineItem", klass)
+
+    described_class.install
+    klass.new.solidus_cicerone_record_cart_add
+
+    expect(klass.hook).to eq(:solidus_cicerone_record_cart_add)
+    expect(SolidusCicerone::EventStore.backend.events).to have_key("cart_add:3")
+  end
 end

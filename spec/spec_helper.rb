@@ -1,5 +1,15 @@
 # frozen_string_literal: true
 
+require "simplecov"
+SimpleCov.start do
+  enable_coverage :line
+  add_filter "/spec/"
+  add_filter "lib/solidus_cicerone/engine.rb"
+  add_filter "lib/generators/"
+  track_files "{lib,app/jobs,app/subscribers,app/helpers}/**/*.rb"
+  minimum_coverage 95
+end
+
 require "webmock/rspec"
 
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)

@@ -30,7 +30,7 @@ module SolidusCicerone
     end
 
     def initialize(user: nil, limit: nil, category: nil, exclude_unavailable: true, track: false,
-      client: nil, cache: nil, stock_scope: nil)
+                   client: nil, cache: nil, stock_scope: nil)
       @user = user
       @limit = limit
       @category = category
@@ -71,18 +71,18 @@ module SolidusCicerone
     end
 
     def query
-      opts = {exclude_unavailable: @exclude_unavailable}
+      opts = { exclude_unavailable: @exclude_unavailable }
       opts[:limit] = @limit || SolidusCicerone.configuration.default_limit
       opts[:category] = @category unless @category.nil? || @category.to_s.empty?
       opts
     end
 
-    def cached
+    def cached(&block)
       store = @cache || (defined?(Rails) && Rails.respond_to?(:cache) ? Rails.cache : nil)
       return yield unless store
 
       key = ["solidus_cicerone", "recs", user_id, query[:limit], query[:category], @exclude_unavailable]
-      store.fetch(key, expires_in: cache_ttl) { yield }
+      store.fetch(key, expires_in: cache_ttl, &block)
     end
 
     def cache_ttl
@@ -116,8 +116,8 @@ module SolidusCicerone
       return {} if scope.nil?
 
       records = scope.respond_to?(:call) ? scope.call(ids) : scope
-      Array(records).each_with_object({}) do |variant, memo|
-        memo[Ids.item_id_for(variant)] = variant
+      Array(records).to_h do |variant|
+        [Ids.item_id_for(variant), variant]
       end
     end
 

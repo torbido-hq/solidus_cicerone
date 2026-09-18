@@ -12,7 +12,8 @@ module SolidusCicerone
       user_id = Ids.user_id_for(order)
       occurred_at = iso8601(order.respond_to?(:completed_at) ? order.completed_at : nil)
       line_items_for(order).filter_map do |line_item|
-        item_id = Ids.item_id_for(variant_for(line_item) || line_item.respond_to?(:variant_id) && line_item.variant_id)
+        variant = variant_for(line_item) || (line_item.respond_to?(:variant_id) && line_item.variant_id)
+        item_id = Ids.item_id_for(variant)
         next if item_id.nil?
 
         {
@@ -42,7 +43,8 @@ module SolidusCicerone
       payload
     end
 
-    def track(kind:, user_id:, item_id:, occurred_at: nil, rank: nil, experiment_id: nil, variant: nil, generated_at: nil)
+    def track(kind:, user_id:, item_id:, occurred_at: nil, rank: nil, experiment_id: nil, variant: nil,
+              generated_at: nil)
       payload = {
         "kind" => kind.to_s,
         "user_id" => user_id.to_s,

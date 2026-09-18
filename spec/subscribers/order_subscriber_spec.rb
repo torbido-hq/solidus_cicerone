@@ -20,7 +20,7 @@ RSpec.describe SolidusCicerone::OrderSubscriber do
   end
 
   def publish(record)
-    event = Struct.new(:payload).new({order: record})
+    event = Struct.new(:payload).new({ order: record })
     described_class.new.on_order_finalized(event)
   end
 
@@ -31,6 +31,14 @@ RSpec.describe SolidusCicerone::OrderSubscriber do
     expect(SolidusCicerone::PostEventsJob.enqueued.first.first).to contain_exactly(
       hash_including("event_type" => "purchase", "event_id" => "R77:44")
     )
+  end
+
+  it "reads an order from a hash-like event" do
+    record = order(id: 80, user_id: 4, number: "R80")
+
+    described_class.new.on_order_finalized({ order: record })
+
+    expect(SolidusCicerone::EventStore.backend.events.keys).to eq(["R80:44"])
   end
 
   it "drops guest checkouts" do
@@ -46,7 +54,7 @@ RSpec.describe SolidusCicerone::OrderSubscriber do
     bus = Object.new
     bus.define_singleton_method(:subscribe) do |name, &block|
       seen << name
-      block.call(Struct.new(:payload).new({order: record}))
+      block.call(Struct.new(:payload).new({ order: record }))
     end
 
     described_class.new.subscribe_to(bus)

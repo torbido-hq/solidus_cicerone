@@ -1,0 +1,74 @@
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  TargetRubyVersion: 3.0
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - "bin/**/*"
+    - "vendor/**/*"
+    - "tmp/**/*"
+    - "spec/dummy/**/*"
+
+Style/Documentation:
+  Enabled: false
+
+# Published gem keeps development deps in the gemspec.
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+# Cicerone serve accepts `k` as an alias for `limit`.
+Naming/MethodParameterName:
+  AllowedNames:
+    - e
+    - k
+
+Layout/LineLength:
+  Max: 120
+
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+
+# Keep Gemfile groups alphabetised so dependencies are easy to scan and
+# merge conflicts on the gem list stay trivial.
+Bundler/OrderedGems:
+  Enabled: true
+  TreatCommentsAsGroupSeparators: true
+  ConsiderPunctuation: false
+
+# ── Cops adopted from the Unagi Software "10 Rubocop Rules" article ──────
+# https://unagisoftware.com/articles/10-rubocop-rules-for-clearer-and-higher-quality-ruby-code/
+# Same pins as Torbido so house style stays aligned where this gem is Ruby.
+
+# Rescuing a bare `rescue` (i.e. `StandardError` implicit) hides typo errors
+# and unrelated exceptions. Force the developer to name the class.
+Style/RescueStandardError:
+  Enabled: true
+  EnforcedStyle: explicit
+
+# Catch typos in the rescued-exception variable name (`e`, not `ex`/`error`).
+Naming/RescuedExceptionsVariableName:
+  Enabled: true
+  PreferredName: e
+
+# Flag silently-unused locals — these are almost always a bug or dead code.
+Lint/UselessAssignment:
+  Enabled: true
+
+# Use the %i[…] literal for arrays of plain symbols.
+Style/SymbolArray:
+  Enabled: true
+  EnforcedStyle: percent
+
+# snake_case method names — protects against accidental CamelCase definitions.
+Naming/MethodName:
+  Enabled: true
+  EnforcedStyle: snake_case
+
+# This gem already uses double quotes (Solidus-style). Do not flip the tree to
+# omakase single quotes just to match Torbido's Rails app.
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes

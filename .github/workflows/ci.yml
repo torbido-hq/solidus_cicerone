@@ -1,21 +1,119 @@
-name: ci
+name: CI
 
 on:
-  push:
-    branches: [main, master]
   pull_request:
+  push:
+    branches: [main]
+
+# Pinned GitHub Action SHAs, centralized here so a version bump only needs to
+# change one line instead of every call site. Referenced below via YAML
+# aliases (*name); these are resolved by the YAML parser before the workflow
+# schema is evaluated, so `uses:` still sees a plain, static string.
+#
+# Same pins as torbido-hq/torbido. Jobs that need a Rails app, JS, or
+# Postgres (Brakeman, importmap, schema doctor, Bullet, eager load) are
+# omitted — this gem's CI is unit specs without a dummy store.
+env:
+  CHECKOUT_ACTION: &checkout_action actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+  SETUP_RUBY_ACTION: &setup_ruby_action ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1
+  CACHE_ACTION: &cache_action actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+  UPLOAD_ARTIFACT_ACTION: &upload_artifact_action actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+  BUNDLE_GEMFILE: Gemfile.unit
 
 jobs:
-  unit:
+  scan_ruby:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
+      - name: Checkout code
+        uses: *checkout_action
+
+      - name: Set up Ruby
+        uses: *setup_ruby_action
         with:
           ruby-version: "3.2"
           bundler-cache: true
+
+      - name: Scan for known security vulnerabilities in gems used
+        run: bundle exec bundler-audit check --update
+
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      RUBOCOP_CACHE_ROOT: tmp/rubocop
+    steps:
+      - name: Checkout code
+        uses: *checkout_action
+
+      - name: Set up Ruby
+        uses: *setup_ruby_action
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Prepare RuboCop cache
+        uses: *cache_action
         env:
-          BUNDLE_GEMFILE: Gemfile.unit
-      - run: bundle exec rspec
-        env:
-          BUNDLE_GEMFILE: Gemfile.unit
+          DEPENDENCIES_HASH: ${{ hashFiles('.rubocop.yml', '.rubocop_todo.yml', 'Gemfile.unit.lock') }}
+        with:
+          path: ${{ env.RUBOCOP_CACHE_ROOT }}
+          key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
+          restore-keys: |
+            rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
+
+      - name: Lint code for consistent style
+        run: bundle exec rubocop -f github
+
+  specs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: *checkout_action
+
+      - name: Set up Ruby
+        uses: *setup_ruby_action
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Run specs
+        run: bundle exec rspec
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: *upload_artifact_action
+        with:
+          name: coverage
+          path: coverage
+
+      - name: Enforce coverage threshold
+        if: ${{ success() }}
+        run: |
+          ruby - <<'RUBY'
+          require 'json'
+          file = 'coverage/.resultset.json'
+          data = JSON.parse(File.read(file)) rescue nil
+          if data.nil?
+            puts 'No coverage data found'
+            exit 1
+          end
+          stats = data.values.first
+          pct = stats.dig('result','covered_percent') || stats['covered_percent']
+          if pct.nil?
+            cov = stats['coverage'] || stats
+            total = 0
+            covered = 0
+            cov.each do |_fname, info|
+              lines = info.is_a?(Hash) ? info['lines'] : info
+              next unless lines.is_a?(Array)
+              lines.each do |l|
+                next if l.nil?
+                total += 1
+                covered += 1 if l.to_i > 0
+              end
+            end
+            pct = total > 0 ? (covered.to_f/total*100.0) : 0.0
+          end
+          pct = pct.to_f
+          puts "Coverage: #{pct.round(2)}%"
+          exit(1) if pct < 95.0
+          RUBY

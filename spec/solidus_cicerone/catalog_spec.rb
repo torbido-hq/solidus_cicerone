@@ -47,8 +47,74 @@ RSpec.describe SolidusCicerone::Catalog do
     negative = SolidusCicerone::SpecFixtures::Review.new(id: 2, user: user, variant: variant, rating: 1)
     skip = SolidusCicerone::SpecFixtures::Review.new(id: 3, user: user, variant: variant, rating: 3)
 
-    expect(described_class.review_event(positive)).to include("event_type" => "review_positive", "event_id" => "review:1")
+    expect(described_class.review_event(positive)).to include("event_type" => "review_positive",
+                                                              "event_id" => "review:1")
     expect(described_class.review_event(negative)).to include("event_type" => "review_negative")
     expect(described_class.review_event(skip)).to be_nil
+  end
+
+  it "orders taxons by position when lft is missing" do
+    product = SolidusCicerone::SpecFixtures::Product.new(
+      slug: "lager",
+      taxons: [
+        SolidusCicerone::SpecFixtures::Taxon.new(id: 2, name: "Seasonal", position: 2),
+        SolidusCicerone::SpecFixtures::Taxon.new(id: 1, name: "Beer", position: 1)
+      ]
+    )
+    variant = SolidusCicerone::SpecFixtures::Variant.new(id: 9, stock: true, product: product)
+
+    expect(described_class.item_row(variant)["category"]).to eq("Beer")
+  end
+
+  it "publishes from available_on when available? is missing" do
+    product = Object.new
+    def product.taxons
+      []
+    end
+
+    def product.slug
+      "lager"
+    end
+
+    def product.available_on
+      Time.utc(2020, 1, 1)
+    end
+
+    def product.discontinue_on
+      Time.utc(2030, 1, 1)
+    end
+    variant = SolidusCicerone::SpecFixtures::Variant.new(id: 3, stock: true, product: product)
+
+    expect(described_class.item_row(variant)["published"]).to be(true)
+  end
+
+  it "uses the product master when a review has no variant" do
+    master = SolidusCicerone::SpecFixtures::Variant.new(id: 5)
+    product = SolidusCicerone::SpecFixtures::Product.new(master: master)
+    review = SolidusCicerone::SpecFixtures::Review.new(
+      id: 9,
+      user: SolidusCicerone::SpecFixtures::User.new(1),
+      product: product,
+      variant: nil,
+      rating: 5
+    )
+
+    expect(described_class.review_event(review)["item_id"]).to eq("5")
+  end
+
+  it "falls back to the product when a review has no master variant" do
+    product = SolidusCicerone::SpecFixtures::Product.new(master: nil)
+    def product.id
+      22
+    end
+    review = SolidusCicerone::SpecFixtures::Review.new(
+      id: 9,
+      user: SolidusCicerone::SpecFixtures::User.new(1),
+      product: product,
+      variant: nil,
+      rating: 5
+    )
+
+    expect(described_class.review_event(review)["item_id"]).to eq("22")
   end
 end

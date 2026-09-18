@@ -3,11 +3,9 @@
 unless defined?(ActiveJob)
   module ActiveJob
     class Base
-      def self.queue_as(*)
-      end
+      def self.queue_as(*); end
 
-      def self.retry_on(*)
-      end
+      def self.retry_on(*); end
 
       def self.enqueued
         @enqueued ||= []
