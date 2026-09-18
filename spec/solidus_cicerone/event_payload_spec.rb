@@ -27,7 +27,11 @@ RSpec.describe SolidusCicerone::EventPayload do
   end
 
   it "drops guest orders" do
-    line = SolidusCicerone::SpecFixtures::LineItem.new(id: 1, variant: SolidusCicerone::SpecFixtures::Variant.new(id: 2), quantity: 1)
+    line = SolidusCicerone::SpecFixtures::LineItem.new(
+      id: 1,
+      variant: SolidusCicerone::SpecFixtures::Variant.new(id: 2),
+      quantity: 1
+    )
     order = SolidusCicerone::SpecFixtures::Order.new(
       id: 3, number: "R1", user_id: nil, completed_at: completed_at, line_items: [line]
     )
@@ -134,5 +138,24 @@ RSpec.describe SolidusCicerone::EventPayload do
     )
 
     expect(shifted["event_id"]).not_to eq(other["event_id"])
+  end
+
+  it "defaults a bad quantity and uses Time.zone when present" do
+    zone = Object.new
+    def zone.now
+      Time.utc(2026, 1, 2, 3, 4, 5)
+    end
+    allow(Time).to receive(:zone).and_return(zone)
+    line = SolidusCicerone::SpecFixtures::LineItem.new(
+      id: 1,
+      variant: SolidusCicerone::SpecFixtures::Variant.new(id: 2),
+      quantity: "nope"
+    )
+    order = SolidusCicerone::SpecFixtures::Order.new(
+      id: 3, number: "R1", user_id: 4, completed_at: nil, line_items: [line]
+    )
+
+    expect(described_class.purchases_from_order(order).first["quantity"]).to eq(1)
+    expect(described_class.now_utc).to eq(Time.utc(2026, 1, 2, 3, 4, 5))
   end
 end

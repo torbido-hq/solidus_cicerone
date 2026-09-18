@@ -17,12 +17,12 @@ module SolidusCicerone
     attr_accessor(*KEYS)
 
     def initialize
-      @serve_url = ENV["CICERONE_SERVE_URL"]
-      @serve_token = ENV["CICERONE_SERVE_TOKEN"]
-      @events_token = ENV["CICERONE_EVENTS_TOKEN"]
-      @trigger_url = ENV["CICERONE_TRIGGER_URL"]
-      @trigger_token = ENV["CICERONE_TRIGGER_TOKEN"]
-      @dashboard_url = ENV["CICERONE_DASHBOARD_URL"]
+      @serve_url = ENV.fetch("CICERONE_SERVE_URL", nil)
+      @serve_token = ENV.fetch("CICERONE_SERVE_TOKEN", nil)
+      @events_token = ENV.fetch("CICERONE_EVENTS_TOKEN", nil)
+      @trigger_url = ENV.fetch("CICERONE_TRIGGER_URL", nil)
+      @trigger_token = ENV.fetch("CICERONE_TRIGGER_TOKEN", nil)
+      @dashboard_url = ENV.fetch("CICERONE_DASHBOARD_URL", nil)
       @cache_ttl = integer_env("CICERONE_CACHE_TTL", 45)
       @default_limit = integer_env("CICERONE_DEFAULT_LIMIT", 10)
       @enabled = ENV["CICERONE_ENABLED"] != "false"
@@ -44,7 +44,7 @@ module SolidusCicerone
     end
 
     def to_h
-      KEYS.each_with_object({}) { |key, memo| memo[key] = public_send(key) }
+      KEYS.to_h { |key| [key, public_send(key)] }
     end
 
     private
@@ -61,7 +61,7 @@ module SolidusCicerone
     end
 
     def integer_env(name, default)
-      raw = ENV[name]
+      raw = ENV.fetch(name, nil)
       raw.nil? || raw.empty? ? default : Integer(raw)
     end
   end

@@ -60,9 +60,9 @@ RSpec.describe SolidusCicerone::Exporter do
 
       attr_reader :used_find_each
 
-      def find_each
+      def find_each(&block)
         @used_find_each = true
-        @rows.each { |row| yield row }
+        @rows.each(&block)
       end
     end.new([order])
 
@@ -84,5 +84,47 @@ RSpec.describe SolidusCicerone::Exporter do
     described_class.call(orders: [guest], users: [], variants: [variant], reviews: [], wished_items: [])
 
     expect(SolidusCicerone::EventStore.backend.events).to eq({})
+  end
+
+  it "loads catalog from Spree when collections are not injected" do
+    chain = Class.new do
+      def self.complete
+        self
+      end
+
+      def self.where(*)
+        self
+      end
+
+      def self.not(*)
+        self
+      end
+
+      def self.includes(*)
+        []
+      end
+
+      def self.column_names
+        %w[canceled_at]
+      end
+
+      def self.all
+        []
+      end
+
+      def self.not_deleted
+        self
+      end
+    end
+    stub_const("Spree::Order", chain)
+    stub_const("Spree::User", chain)
+    stub_const("Spree::Variant", chain)
+    stub_const("Spree::Review", chain)
+    stub_const("Spree::WishedItem", chain)
+
+    described_class.call
+
+    expect(SolidusCicerone::EventStore.backend.users).to eq({})
+    expect(SolidusCicerone::EventStore.backend.items).to eq({})
   end
 end

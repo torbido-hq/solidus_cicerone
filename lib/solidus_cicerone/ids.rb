@@ -10,12 +10,12 @@ module SolidusCicerone
       return if record.nil?
 
       raw = if record.respond_to?(:user_id) && !record.is_a?(String)
-        record.user_id
-      elsif record.respond_to?(:id)
-        record.id
-      else
-        record
-      end
+              record.user_id
+            elsif record.respond_to?(:id)
+              record.id
+            else
+              record
+            end
       return if raw.nil? || raw.to_s.empty?
 
       raw.to_s

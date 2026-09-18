@@ -36,4 +36,26 @@ RSpec.describe SolidusCicerone, ".record_event" do
 
     expect(described_class::ExportJob.enqueued).to eq([[]])
   end
+
+  it "enqueues a retrain" do
+    described_class.enqueue_retrain
+
+    expect(described_class::RetrainJob.enqueued).to eq([[]])
+  end
+
+  it "reads the dashboard url and forwards recommendations" do
+    SolidusCicerone.configure { |c| c.dashboard_url = "http://dash.test" }
+    client = instance_double(SolidusCicerone::Client, recommendations: { "items" => [] })
+    allow(described_class).to receive(:client).and_return(client)
+
+    expect(described_class.dashboard_url).to eq("http://dash.test")
+    described_class.recommendations_for(
+      SolidusCicerone::SpecFixtures::User.new(1),
+      client: client,
+      track: false,
+      stock_scope: ->(_) { [] }
+    )
+
+    expect(client).to have_received(:recommendations)
+  end
 end

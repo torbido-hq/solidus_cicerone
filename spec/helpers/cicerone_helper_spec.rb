@@ -26,6 +26,18 @@ RSpec.describe Spree::CiceroneHelper do
     end.new(routes)
   end
 
+  it "looks up recommendations and records a view" do
+    recs = SolidusCicerone::Lookup::Result.new(user_id: "1", items: [])
+    allow(SolidusCicerone).to receive(:recommendations_for).and_return(recs)
+    allow(SolidusCicerone).to receive(:record_view)
+
+    expect(host.cicerone_recommendations(user: :shopper, limit: 3)).to eq(recs)
+    host.cicerone_record_view(:variant, user: :shopper)
+
+    expect(SolidusCicerone).to have_received(:recommendations_for).with(:shopper, limit: 3)
+    expect(SolidusCicerone).to have_received(:record_view).with(:shopper, :variant)
+  end
+
   it "forwards experiment fields on the click path" do
     expect(
       host.cicerone_track_path(

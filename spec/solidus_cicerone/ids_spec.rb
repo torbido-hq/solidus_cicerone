@@ -5,6 +5,7 @@ require "spec_helper"
 RSpec.describe SolidusCicerone::Ids do
   it "stringifies user ids" do
     expect(described_class.user_id_for(SolidusCicerone::SpecFixtures::User.new(12))).to eq("12")
+    expect(described_class.user_id_for("guest-token")).to eq("guest-token")
   end
 
   it "reads order.user_id and treats nil as guest" do

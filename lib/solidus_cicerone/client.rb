@@ -22,7 +22,8 @@ module SolidusCicerone
       )
     end
 
-    def initialize(base_url:, token: nil, events_token: nil, trigger_url: nil, trigger_token: nil, timeout: DEFAULT_TIMEOUT)
+    def initialize(base_url:, token: nil, events_token: nil, trigger_url: nil, trigger_token: nil,
+                   timeout: DEFAULT_TIMEOUT)
       @base_url = normalize_base(base_url)
       @token = presence(token)
       @events_token = presence(events_token) || @token
@@ -74,7 +75,7 @@ module SolidusCicerone
       list = events.is_a?(Array) ? events : [events]
       return list.first if list.size == 1
 
-      {"events" => list}
+      { "events" => list }
     end
 
     def request(method, path, params: nil, json_body: nil, token: nil, auth: true, base: @base_url)

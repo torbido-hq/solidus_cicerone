@@ -71,9 +71,7 @@ module SolidusCicerone
       taxons = product.respond_to?(:taxons) ? product.taxons : nil
       return if taxons.nil?
 
-      if taxons.respond_to?(:order)
-        return taxons.order(:lft).first
-      end
+      return taxons.order(:lft).first if taxons.respond_to?(:order)
 
       Array(taxons).min_by { |taxon| [taxon_lft(taxon), taxon.respond_to?(:id) ? taxon.id.to_i : 0] }
     end
@@ -116,7 +114,9 @@ module SolidusCicerone
 
     def review_item(review)
       return review.variant if review.respond_to?(:variant) && review.variant
-      return review.product.master if review.respond_to?(:product) && review.product.respond_to?(:master) && review.product.master
+      if review.respond_to?(:product) && review.product.respond_to?(:master) && review.product.master
+        return review.product.master
+      end
 
       review.respond_to?(:product) ? review.product : review
     end

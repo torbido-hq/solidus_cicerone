@@ -18,7 +18,7 @@ module SolidusCicerone
     def self.install_on(klass, method_name, handler)
       return if klass.nil?
       return unless klass.respond_to?(:after_create_commit)
-      return if klass.instance_methods.include?(method_name)
+      return if klass.method_defined?(method_name)
 
       subscriber = self
       klass.after_create_commit do

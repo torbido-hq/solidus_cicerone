@@ -143,10 +143,10 @@ module SolidusCicerone
       end
 
       def replace_all(users:, items:, events:)
-        @users = users.each_with_object({}) { |row, memo| memo[row.fetch("user_id")] = row }
-        @items = items.each_with_object({}) { |row, memo| memo[row.fetch("item_id")] = row }
+        @users = users.to_h { |row| [row.fetch("user_id"), row] }
+        @items = items.to_h { |row| [row.fetch("item_id"), row] }
         kept = @events.reject { |_id, row| EventStore::REBUILD_EVENT_TYPES.include?(row["event_type"]) }
-        rebuilt = events.each_with_object({}) { |row, memo| memo[row.fetch("event_id")] = row }
+        rebuilt = events.to_h { |row| [row.fetch("event_id"), row] }
         @events = kept.merge(rebuilt)
       end
     end

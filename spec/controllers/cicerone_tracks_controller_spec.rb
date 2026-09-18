@@ -4,8 +4,7 @@ require "spec_helper"
 
 module Spree
   class StoreController
-    def self.skip_before_action(*)
-    end
+    def self.skip_before_action(*); end
 
     def head(status)
       @status = status
