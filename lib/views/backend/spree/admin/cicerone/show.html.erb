@@ -11,6 +11,11 @@
 <p><%= t("spree.admin.cicerone.sql_hint") %></p>
 <p><%= t("spree.admin.cicerone.tokens_hint") %></p>
 
+<% if @input_fragment.present? %>
+  <h3><%= t("spree.admin.cicerone.input_heading") %></h3>
+  <pre><code><%= @input_fragment %></code></pre>
+<% end %>
+
 <%= form_with url: spree.admin_cicerone_path, method: :put, local: true do %>
   <fieldset>
     <div class="field">
