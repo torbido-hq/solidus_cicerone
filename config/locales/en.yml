@@ -21,4 +21,5 @@ en:
         default_limit: Default limit
         enabled: Enabled
         tokens_hint: Tokens are stored as Solidus preferences when available; otherwise they stay in the initializer or ENV.
-        sql_hint: Nightly training reads the exported Solidus tables. Cicerone TOML stays on the Cicerone deploy.
+        sql_hint: Cicerone does not load ERb or ActiveRecord. Author the three SELECTs in Rails (`bin/rails solidus_cicerone:input` or `SolidusCicerone::Input`) and paste them into Cicerone TOML on the Cicerone deploy.
+        input_heading: Cicerone input (paste on the Cicerone deploy)

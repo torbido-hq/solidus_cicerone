@@ -11,6 +11,10 @@ module SolidusCicerone
 
     engine_name "solidus_cicerone"
 
+    rake_tasks do
+      load File.expand_path("../tasks/solidus_cicerone.rake", __dir__)
+    end
+
     config.generators do |g|
       g.test_framework :rspec
     end

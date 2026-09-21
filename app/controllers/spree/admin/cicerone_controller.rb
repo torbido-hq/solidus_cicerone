@@ -12,6 +12,7 @@ module Spree
           trigger_token: SolidusCicerone.trigger_token,
           dashboard_url: SolidusCicerone.dashboard_url
         )
+        @input_fragment = SolidusCicerone::Input.toml_fragment
       end
 
       def update
