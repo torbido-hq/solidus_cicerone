@@ -2,8 +2,8 @@
 
 module Spree
   module CiceroneHelper
-    def cicerone_recommendations(user: try(:spree_current_user), **opts)
-      SolidusCicerone.recommendations_for(user, **opts)
+    def cicerone_recommendations(user: try(:spree_current_user), **)
+      SolidusCicerone.recommendations_for(user, **)
     end
 
     def cicerone_record_impressions(recs)

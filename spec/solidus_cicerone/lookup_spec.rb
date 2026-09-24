@@ -4,20 +4,22 @@ require "spec_helper"
 
 RSpec.describe SolidusCicerone::Lookup do
   let(:user) { SolidusCicerone::SpecFixtures::User.new(12) }
-  let(:client) { instance_double(SolidusCicerone::Client) }
+  let(:client) { instance_double(Cicerone::Client) }
   let(:in_stock) { SolidusCicerone::SpecFixtures::Variant.new(id: 9, stock: true) }
   let(:sold_out) { SolidusCicerone::SpecFixtures::Variant.new(id: 8, stock: false) }
 
   let(:body) do
-    {
-      "user_id" => "12",
-      "fallback" => false,
-      "generated_at" => "2026-09-17T03:00:00Z",
-      "items" => [
-        { "item_id" => "9", "rank" => 1, "score" => 0.9, "source" => "personalized" },
-        { "item_id" => "8", "rank" => 2, "score" => 0.8, "source" => "personalized" }
+    Cicerone::Recommendations.new(
+      generated_at: "2026-09-17T03:00:00Z",
+      user_id: "12",
+      fallback: false,
+      experiment_id: nil,
+      variant: nil,
+      items: [
+        Cicerone::Item.new(item_id: "9", rank: 1, score: 0.9, source: "personalized", reasons: nil),
+        Cicerone::Item.new(item_id: "8", rank: 2, score: 0.8, source: "personalized", reasons: nil)
       ]
-    }
+    )
   end
 
   it "does not enqueue impressions unless track is on" do
@@ -53,7 +55,16 @@ RSpec.describe SolidusCicerone::Lookup do
   it "requests __cold_start__ for guests" do
     allow(client).to receive(:recommendations)
       .with("__cold_start__", hash_including(limit: 4))
-      .and_return("user_id" => "__cold_start__", "fallback" => true, "items" => [])
+      .and_return(
+        Cicerone::Recommendations.new(
+          generated_at: nil,
+          user_id: "__cold_start__",
+          fallback: true,
+          items: [],
+          experiment_id: nil,
+          variant: nil
+        )
+      )
 
     result = described_class.call(user: nil, limit: 4, client: client, track: false, stock_scope: ->(_) { [] })
 
@@ -89,7 +100,7 @@ RSpec.describe SolidusCicerone::Lookup do
   end
 
   it "returns an empty fallback list when the client errors" do
-    allow(client).to receive(:recommendations).and_raise(SolidusCicerone::Error.new("down"))
+    allow(client).to receive(:recommendations).and_raise(Cicerone::Error.new("down"))
 
     result = described_class.call(user: user, client: client, track: false)
 

@@ -11,13 +11,13 @@ unless defined?(ActiveJob)
         @enqueued ||= []
       end
 
-      def self.perform_later(*args)
-        enqueued << args
+      def self.perform_later(*)
+        enqueued << [*]
         true
       end
 
-      def self.perform_now(*args)
-        new.perform(*args)
+      def self.perform_now(*)
+        new.perform(*)
       end
     end
   end

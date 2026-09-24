@@ -14,7 +14,7 @@ module SolidusCicerone
       enabled
     ].freeze
 
-    attr_accessor(*KEYS)
+    attr_accessor(*KEYS, :faraday)
 
     def initialize
       @serve_url = ENV.fetch("CICERONE_SERVE_URL", nil)

@@ -2,7 +2,7 @@
 
 module SolidusCicerone
   module Ids
-    COLD_START = "__cold_start__"
+    COLD_START = ::Cicerone::COLD_START_USER_ID
 
     module_function
 

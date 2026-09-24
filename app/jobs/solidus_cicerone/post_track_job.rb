@@ -8,7 +8,7 @@ module SolidusCicerone
       list = Array(events).compact
       return if list.empty?
 
-      SolidusCicerone.client.post_track(list)
+      SolidusCicerone.client.track(list)
     end
   end
 end
