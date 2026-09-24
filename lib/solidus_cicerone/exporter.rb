@@ -83,11 +83,11 @@ module SolidusCicerone
       rows
     end
 
-    def each_record(scope, &block)
+    def each_record(scope, &)
       if scope.respond_to?(:find_each)
-        scope.find_each(&block)
+        scope.find_each(&)
       else
-        Array(scope).each(&block)
+        Array(scope).each(&)
       end
     end
 

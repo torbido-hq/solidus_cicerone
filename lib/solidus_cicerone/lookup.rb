@@ -45,18 +45,18 @@ module SolidusCicerone
       return empty_result unless SolidusCicerone.enabled?
 
       body = fetch
-      items = filter_live_stock(Array(body["items"]))
+      items = filter_live_stock(Array(body.items))
       result = Result.new(
-        user_id: body["user_id"] || user_id,
-        fallback: body["fallback"] == true || user_id == Ids::COLD_START,
-        generated_at: body["generated_at"],
-        experiment_id: body["experiment_id"],
-        variant: body["variant"],
+        user_id: body.user_id || user_id,
+        fallback: body.fallback == true || user_id == Ids::COLD_START,
+        generated_at: body.generated_at,
+        experiment_id: body.experiment_id,
+        variant: body.variant,
         items: items
       )
       SolidusCicerone.enqueue_impressions(result) if @track
       result
-    rescue Error
+    rescue Cicerone::Error
       empty_result
     end
 
@@ -77,12 +77,12 @@ module SolidusCicerone
       opts
     end
 
-    def cached(&block)
+    def cached(&)
       store = @cache || (defined?(Rails) && Rails.respond_to?(:cache) ? Rails.cache : nil)
       return yield unless store
 
       key = ["solidus_cicerone", "recs", user_id, query[:limit], query[:category], @exclude_unavailable]
-      store.fetch(key, expires_in: cache_ttl, &block)
+      store.fetch(key, expires_in: cache_ttl, &)
     end
 
     def cache_ttl
@@ -91,19 +91,19 @@ module SolidusCicerone
     end
 
     def filter_live_stock(items)
-      variants = variants_by_id(items.map { |row| row["item_id"] })
+      variants = variants_by_id(items.map(&:item_id))
       kept = []
       items.each do |row|
-        variant = variants[row["item_id"].to_s]
+        variant = variants[row.item_id.to_s]
         next if variant && !in_stock?(variant)
         next if variant.nil? && stock_scope?
 
         kept << Item.new(
-          item_id: row["item_id"].to_s,
-          rank: row["rank"],
-          score: row["score"],
-          source: row["source"],
-          reasons: row["reasons"],
+          item_id: row.item_id.to_s,
+          rank: row.rank,
+          score: row.score,
+          source: row.source,
+          reasons: row.reasons,
           variant: variant
         )
       end

@@ -1,6 +1,6 @@
 # solidus_cicerone
 
-Solidus host for [Cicerone](https://github.com/torbido-hq/cicerone). This gem interprets Solidus (ActiveRecord) and speaks Cicerone’s public contract. It does not train, rank, or edit Cicerone TOML.
+Solidus host for [Cicerone](https://github.com/torbido-hq/cicerone). This gem interprets Solidus (ActiveRecord). HTTP goes through the [`cicerone`](https://github.com/torbido-hq/cicerone.rb) gem. It does not train, rank, or edit Cicerone TOML.
 
 [Beerware](LICENSE) — same notice as Cicerone.
 

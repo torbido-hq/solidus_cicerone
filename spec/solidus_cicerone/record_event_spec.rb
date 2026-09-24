@@ -45,7 +45,10 @@ RSpec.describe SolidusCicerone, ".record_event" do
 
   it "reads the dashboard url and forwards recommendations" do
     SolidusCicerone.configure { |c| c.dashboard_url = "http://dash.test" }
-    client = instance_double(SolidusCicerone::Client, recommendations: { "items" => [] })
+    recs = Cicerone::Recommendations.new(
+      generated_at: nil, user_id: "1", fallback: false, items: [], experiment_id: nil, variant: nil
+    )
+    client = instance_double(Cicerone::Client, recommendations: recs)
     allow(described_class).to receive(:client).and_return(client)
 
     expect(described_class.dashboard_url).to eq("http://dash.test")

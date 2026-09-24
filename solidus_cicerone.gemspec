@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Solidus host client for Cicerone."
   spec.description = <<~DESC
-    Interprets Solidus with ActiveRecord and speaks Cicerone's public contract.
+    Interprets Solidus with ActiveRecord. HTTP goes through the cicerone gem.
     Does not train or rank. Nightly training reads exported tables; storefront
     reads GET /recommendations; events dual-write to those tables and POST
     /events; impressions/clicks enqueue POST /track.
@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.metadata["changelog_uri"] = "#{spec.homepage}/releases"
   spec.metadata["rubygems_mfa_required"] = "true"
 
-  spec.required_ruby_version = ">= 3.0"
+  spec.required_ruby_version = ">= 3.2"
 
   files = Dir.chdir(__dir__) do
     if File.directory?(".git")
@@ -38,6 +38,7 @@ Gem::Specification.new do |spec|
   spec.executables = files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "cicerone", "~> 0.1.0"
   spec.add_dependency "solidus_core", [">= 3.2", "< 5"]
   spec.add_dependency "solidus_support", [">= 0.12", "< 1"]
 

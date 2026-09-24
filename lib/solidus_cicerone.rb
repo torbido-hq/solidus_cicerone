@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "cicerone"
+
 require "solidus_cicerone/version"
 require "solidus_cicerone/errors"
 require "solidus_cicerone/configuration"
@@ -9,7 +11,6 @@ require "solidus_cicerone/catalog"
 require "solidus_cicerone/input"
 require "solidus_cicerone/event_store"
 require "solidus_cicerone/exporter"
-require "solidus_cicerone/client"
 require "solidus_cicerone/settings"
 require "solidus_cicerone/lookup"
 
@@ -59,17 +60,17 @@ module SolidusCicerone
     end
 
     def client
-      Client.new(
-        base_url: serve_url,
+      ::Cicerone::Client.new(
+        url: serve_url,
         token: serve_token,
         events_token: events_token,
         trigger_url: trigger_url,
-        trigger_token: trigger_token
+        trigger_token: trigger_token, &configuration.faraday
       )
     end
 
-    def recommendations_for(user, **opts)
-      Lookup.call(user: user, **opts)
+    def recommendations_for(user, **)
+      Lookup.call(user: user, **)
     end
 
     def record_event(payload)

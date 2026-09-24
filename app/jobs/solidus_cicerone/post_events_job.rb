@@ -8,7 +8,7 @@ module SolidusCicerone
       payload = resolve_payload(order_or_events, events)
       return if payload.empty?
 
-      SolidusCicerone.client.post_events(payload)
+      SolidusCicerone.client.record(payload)
     end
 
     private

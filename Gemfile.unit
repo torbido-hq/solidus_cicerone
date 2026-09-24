@@ -4,6 +4,7 @@
 source "https://rubygems.org"
 
 gem "bundler-audit", "~> 0.9"
+gem "cicerone", git: "https://github.com/torbido-hq/cicerone.rb.git", branch: "main"
 gem "rake"
 gem "rspec", "~> 3.13"
 gem "rubocop", "~> 1.81"

@@ -5,7 +5,7 @@ module SolidusCicerone
     def perform
       return unless SolidusCicerone.enabled?
 
-      SolidusCicerone.client.trigger_retrain
+      SolidusCicerone.client.retrain
     end
   end
 end
